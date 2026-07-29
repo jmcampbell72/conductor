@@ -1,0 +1,11 @@
+{
+  "default": {
+    "token_budget": 4000,
+    "complexity_threshold": 0.6,
+    "similarity_threshold": 0.85,
+    "models": {
+      "simple": "gpt-4o-mini",
+      "complex": "claude-opus-5"
+    }
+  }
+}
