@@ -1,3 +1,7 @@
+// Tests for the telemetry registry: per-caller recording, concurrent safety,
+// and token accumulation.
+//
+// Author: Justin Campbell
 package telemetry
 
 import (

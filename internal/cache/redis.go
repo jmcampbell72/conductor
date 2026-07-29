@@ -1,3 +1,7 @@
+// Redis-backed cache Store implementation. Values are JSON-encoded and stored
+// with a 24-hour TTL; cache write failures are non-fatal best-effort.
+//
+// Author: Justin Campbell
 package cache
 
 import (

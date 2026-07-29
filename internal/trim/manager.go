@@ -1,3 +1,8 @@
+// Trims conversation history to a token budget using a sliding window, keeping
+// the newest non-system messages. Optionally summarises dropped turns via an LLM
+// and injects the summary as a system message.
+//
+// Author: Justin Campbell
 package trim
 
 import (

@@ -1,3 +1,7 @@
+// Generates random 16-character hex request IDs and propagates them through
+// the request context for structured logging correlation.
+//
+// Author: Justin Campbell
 package reqid
 
 import (

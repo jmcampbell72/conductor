@@ -1,3 +1,8 @@
+// OpenAI-compatible provider supporting both the public OpenAI API and private
+// hosted endpoints. NewOpenAI targets api.openai.com; NewHosted accepts any
+// base URL for private inference endpoints.
+//
+// Author: Justin Campbell
 package provider
 
 import (

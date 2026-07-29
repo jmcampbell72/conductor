@@ -1,3 +1,7 @@
+// Text tokenizer for TF-IDF embedding. Lowercases, splits on non-alphanumeric
+// characters, and drops stopwords and tokens shorter than 3 characters.
+//
+// Author: Justin Campbell
 package vec
 
 import (

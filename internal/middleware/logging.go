@@ -1,3 +1,7 @@
+// Structured JSON request logging middleware. Emits one slog entry per request
+// with timing, HTTP status, model, and cache outcome fields.
+//
+// Author: Justin Campbell
 package middleware
 
 import (

@@ -1,3 +1,7 @@
+// Loads Config from environment variables at startup and defines all
+// configuration types: route, model tier, hosted LLM, and gateway settings.
+//
+// Author: Justin Campbell
 package config
 
 import (

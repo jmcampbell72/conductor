@@ -1,3 +1,6 @@
+// Defines the Store interface and Stats type shared by all cache backends.
+//
+// Author: Justin Campbell
 package cache
 
 import (

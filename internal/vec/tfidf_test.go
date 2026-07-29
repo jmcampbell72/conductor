@@ -1,3 +1,7 @@
+// Tests for the TF-IDF embedder: tokenization, L2 normalisation, cosine
+// similarity, and Add vs Embed consistency.
+//
+// Author: Justin Campbell
 package vec
 
 import (

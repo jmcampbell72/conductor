@@ -1,3 +1,7 @@
+// Entry point for the Conductor gateway. Loads configuration, wires all
+// components, registers HTTP routes, and manages graceful shutdown.
+//
+// Author: Justin Campbell
 package main
 
 import (

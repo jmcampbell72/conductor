@@ -1,3 +1,7 @@
+// Hierarchical Navigable Small World (HNSW) approximate nearest-neighbour graph
+// index. Provides O(log n) expected search time with M=16, ef=50, efConstruction=200.
+//
+// Author: Justin Campbell
 package vec
 
 import (

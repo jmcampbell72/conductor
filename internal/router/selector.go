@@ -1,3 +1,7 @@
+// Maps a request Analysis and budget state to a model name using a
+// priority-ordered routing matrix: override > economy > task-type > complexity.
+//
+// Author: Justin Campbell
 package router
 
 import "conductor/internal/config"

@@ -1,5 +1,7 @@
 // Package redis provides a minimal RESP2 client using only the stdlib net package.
 // Only the commands needed by the cache adapter are implemented: GET, SET EX, PING.
+//
+// Author: Justin Campbell
 package redis
 
 import (

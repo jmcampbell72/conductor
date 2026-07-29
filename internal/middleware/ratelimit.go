@@ -1,3 +1,7 @@
+// Per-caller token-bucket rate limiting middleware. Falls back to RemoteAddr
+// as the bucket key for unauthenticated requests.
+//
+// Author: Justin Campbell
 package middleware
 
 import (

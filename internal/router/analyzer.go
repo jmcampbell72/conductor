@@ -1,3 +1,8 @@
+// Scores request complexity on a 0–1 scale using four heuristic signals
+// (content length, turn count, keyword presence, structural cues) and
+// classifies task type (planning, writing, QA, or general).
+//
+// Author: Justin Campbell
 package router
 
 import (

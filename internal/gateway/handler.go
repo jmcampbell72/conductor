@@ -1,3 +1,8 @@
+// Core HTTP handler for the Conductor gateway. Orchestrates the full request
+// pipeline: decompression, trimming, complexity analysis, model selection,
+// output enforcement, cache lookup, provider dispatch, and telemetry recording.
+//
+// Author: Justin Campbell
 package gateway
 
 import (

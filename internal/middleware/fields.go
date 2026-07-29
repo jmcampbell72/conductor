@@ -1,3 +1,8 @@
+// Context-scoped log field store. Middleware components write named fields into
+// a per-request record that the logging middleware reads after the inner handler
+// returns.
+//
+// Author: Justin Campbell
 package middleware
 
 import (

@@ -1,3 +1,6 @@
+// Tests for the complexity scorer and task type classifier.
+//
+// Author: Justin Campbell
 package router
 
 import (

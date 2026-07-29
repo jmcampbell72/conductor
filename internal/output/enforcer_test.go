@@ -1,3 +1,7 @@
+// Tests for the output enforcer: max_tokens cap, response_format injection,
+// concise-response instruction placement, and immutability guarantees.
+//
+// Author: Justin Campbell
 package output
 
 import (

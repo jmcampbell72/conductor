@@ -1,3 +1,7 @@
+// Tests for the conversation trimmer: window sliding, system message
+// preservation, and zero-budget pass-through.
+//
+// Author: Justin Campbell
 package trim
 
 import (

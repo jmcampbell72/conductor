@@ -1,3 +1,6 @@
+// Tests for SHA-256 cache key computation.
+//
+// Author: Justin Campbell
 package cache
 
 import (

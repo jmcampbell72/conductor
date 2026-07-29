@@ -1,3 +1,8 @@
+// Applies per-route output controls to requests before provider dispatch.
+// Enforces max_tokens caps, response_format type, and concise-response
+// instruction injection. The original request is never mutated.
+//
+// Author: Justin Campbell
 package output
 
 import (

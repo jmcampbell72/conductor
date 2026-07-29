@@ -1,3 +1,6 @@
+// Tests for the flat k-NN index and the semantic Store integration.
+//
+// Author: Justin Campbell
 package vec
 
 import (

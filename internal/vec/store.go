@@ -1,3 +1,8 @@
+// Semantic cache combining TF-IDF embedding with HNSW nearest-neighbour search.
+// Stores request+response pairs and retrieves the closest cached response above
+// a configurable cosine-similarity threshold.
+//
+// Author: Justin Campbell
 package vec
 
 import (

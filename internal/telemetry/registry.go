@@ -1,3 +1,7 @@
+// Accumulates per-caller request counters, route tier splits, and per-route
+// spend in microdollars. All metrics are exposed via the admin stats endpoint.
+//
+// Author: Justin Campbell
 package telemetry
 
 import (

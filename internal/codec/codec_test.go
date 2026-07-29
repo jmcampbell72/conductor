@@ -1,3 +1,7 @@
+// Tests for the phrase codec: round-trip fidelity, compression correctness,
+// and message/response helper functions.
+//
+// Author: Justin Campbell
 package codec
 
 import (

@@ -1,3 +1,8 @@
+// Computes SHA-256 cache keys from normalised request fields. The key is
+// derived after trimming and model selection so it reflects exactly what
+// the provider will receive.
+//
+// Author: Justin Campbell
 package cache
 
 import (

@@ -1,3 +1,7 @@
+// HTTP handlers for the /admin/* management API. Provides endpoints for
+// per-caller telemetry, cache stats, and live route configuration updates.
+//
+// Author: Justin Campbell
 package admin
 
 import (

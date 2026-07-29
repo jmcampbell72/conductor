@@ -1,3 +1,7 @@
+// Thread-safe store for live route configuration. The handler reads from it
+// on every request; the admin API writes to it without requiring a restart.
+//
+// Author: Justin Campbell
 package config
 
 import "sync"

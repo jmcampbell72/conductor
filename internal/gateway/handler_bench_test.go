@@ -1,3 +1,7 @@
+// Benchmarks for gateway handler throughput: the exact cache-hit path and the
+// validation+routing path up to (but not including) provider dispatch.
+//
+// Author: Justin Campbell
 package gateway_test
 
 import (

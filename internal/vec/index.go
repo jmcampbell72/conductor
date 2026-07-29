@@ -1,3 +1,7 @@
+// Flat O(n) linear k-NN index used for testing and small corpora. Superseded
+// by the HNSW index for production use.
+//
+// Author: Justin Campbell
 package vec
 
 import "sync"

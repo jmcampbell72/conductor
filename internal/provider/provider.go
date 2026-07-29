@@ -1,3 +1,6 @@
+// Defines the Provider interface implemented by all LLM backend adapters.
+//
+// Author: Justin Campbell
 package provider
 
 import (

@@ -2,6 +2,8 @@
 // Verbose LLM preamble and transition phrases are replaced with compact tokens
 // so conversation history shrinks across multi-turn agent interactions.
 // The codec is purely rule-based; Phase 7 can replace it with a fine-tuned model.
+//
+// Author: Justin Campbell
 package codec
 
 import (

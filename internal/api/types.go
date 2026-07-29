@@ -1,3 +1,7 @@
+// OpenAI-compatible wire types shared across all packages. Defines request,
+// response, and error structures for the chat completions API.
+//
+// Author: Justin Campbell
 package api
 
 import (

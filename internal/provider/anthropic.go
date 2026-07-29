@@ -1,3 +1,8 @@
+// Anthropic Messages API provider. Translates OpenAI-format requests to the
+// Anthropic wire format, extracts system messages, and normalises stop reasons
+// back to OpenAI conventions.
+//
+// Author: Justin Campbell
 package provider
 
 import (

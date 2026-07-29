@@ -1,3 +1,8 @@
+// L2-normalised term-frequency vectors and cosine similarity. IDF is
+// intentionally omitted; stopword removal handles common-term downweighting
+// without causing corpus drift as the cache grows.
+//
+// Author: Justin Campbell
 package vec
 
 import "math"

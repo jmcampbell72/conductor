@@ -1,3 +1,7 @@
+// Bearer token authentication middleware. Validates caller API keys against the
+// configured key map and stores the caller ID in the request context.
+//
+// Author: Justin Campbell
 package middleware
 
 import (

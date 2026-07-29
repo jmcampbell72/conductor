@@ -1,3 +1,7 @@
+// Tests for the in-memory cache: set/get, TTL expiry, hit/miss stats, and
+// gob-snapshot persistence.
+//
+// Author: Justin Campbell
 package cache
 
 import (

@@ -1,3 +1,7 @@
+// Tests and benchmarks for the HNSW graph index: correctness, threshold
+// enforcement, concurrent safety, and insertion/search throughput.
+//
+// Author: Justin Campbell
 package vec
 
 import (

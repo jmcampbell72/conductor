@@ -1,3 +1,8 @@
+// Thread-safe in-memory TTL cache with gob-snapshot persistence. Entries are
+// evicted lazily; snapshots are written atomically via temp-file rename to
+// survive crashes between periodic saves.
+//
+// Author: Justin Campbell
 package cache
 
 import (

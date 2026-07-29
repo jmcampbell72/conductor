@@ -1,3 +1,7 @@
+// Token count estimation utilities using the ~4 characters per token rule of
+// thumb for English text.
+//
+// Author: Justin Campbell
 package trim
 
 import "conductor/internal/api"

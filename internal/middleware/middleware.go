@@ -1,3 +1,7 @@
+// Defines the Middleware type and Chain combinator for composing HTTP middleware.
+// The first argument to Chain is the outermost wrapper.
+//
+// Author: Justin Campbell
 package middleware
 
 import "net/http"
