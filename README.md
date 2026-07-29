@@ -1,5 +1,7 @@
 # Conductor
 
+![Conductor](docs/conductor-banner.png)
+
 An AI inference gateway that reduces LLM costs through tiered routing, exact and semantic response caching, and agent-traffic compression — without requiring callers to change their code.
 
 Conductor speaks the OpenAI wire protocol. Point any SDK at it with a `base_url` change and it works immediately.
