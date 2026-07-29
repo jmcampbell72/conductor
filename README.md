@@ -75,6 +75,7 @@ The minimal useful configuration is one API key. Everything else has a default.
 |---|---|---|
 | `OPENAI_API_KEY` | — | OpenAI provider |
 | `ANTHROPIC_API_KEY` | — | Anthropic provider |
+| `HOSTED_LLMS` | — | JSON array of private OpenAI-compatible endpoints |
 | `GATEWAY_API_KEYS` | — | `key:caller_id` pairs for auth; empty = dev mode |
 | `ADMIN_API_KEY` | — | Protects `/admin/*` endpoints |
 | `GATEWAY_ADDR` | `:8080` | Listen address |
@@ -83,6 +84,12 @@ The minimal useful configuration is one API key. Everything else has a default.
 | `ROUTES_CONFIG` | `config/routes.json` | Route and model configuration |
 
 Route configuration (model tiers, token budget, thresholds) lives in `config/routes.json` and can be updated at runtime via the admin API without restarting.
+
+Private hosted LLMs are registered via `HOSTED_LLMS` as a JSON array:
+```sh
+export HOSTED_LLMS='[{"name":"my-private-llm","url":"https://api.example.com/v1","key":"sk-..."}]'
+```
+The `name` is used as the model identifier in `routes.json`.
 
 ---
 

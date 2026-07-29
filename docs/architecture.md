@@ -81,13 +81,21 @@ Enforces a per-route token budget by sliding a window over non-system messages (
 ### `internal/router`
 Two-step model selection:
 
-1. **Analyzer** scores the request 0.0–1.0 across four signals:
+1. **Analyzer** produces an `Analysis{Score, TaskType}` from four signals:
    - Content length (saturates at 3 000 chars → 0.25)
    - Turn count (saturates at 10 turns → 0.15)
    - Keyword presence (~30 domain/complexity terms → 0.35)
    - Structural cues (code fences, equations, JSON → 0.25)
 
-2. **Selector** maps the score to a model tier: below `complexity_threshold` → simple model; at or above → complex model. A hard `model_override` bypasses scoring entirely.
+   Task type is classified from keyword sets — `planning` (plan, outline, roadmap, …), `writing` (write, draft, compose, …), `qa` (test, debug, verify, …) — with `general` as the default. Priority: qa > writing > planning > general.
+
+2. **Selector** applies a priority-ordered routing matrix:
+   1. `model_override` — always wins when set
+   2. Budget exceeded + `economy` model configured → economy model
+   3. Task type `planning` or `writing` + `writing` model configured → writing model
+   4. Task type `qa` + `qa` model configured → qa model
+   5. Complexity score ≥ `complexity_threshold` → complex model
+   6. Otherwise → simple model
 
 ### `internal/output`
 `Enforcer.Apply` applies per-route output controls to the request before the cache key is computed:
@@ -121,7 +129,7 @@ Symmetric shorthand codec for agent-to-agent traffic. A 60-entry dictionary maps
 Inbound request history is decompressed before trimming (so the trimmer sees natural language). Outbound responses are compressed before returning to the agent.
 
 ### `internal/telemetry`
-Per-caller atomic counters: requests, tokens, exact/semantic/miss cache outcomes, simple/complex route splits. Exposed via `GET /admin/stats`.
+Per-caller atomic counters: requests, tokens, exact/semantic/miss cache outcomes, route tier splits (simple, complex, writing, qa, economy). Per-route spend tracking in microdollars (accumulated from token counts × configured cost rates) used for budget threshold enforcement. All metrics exposed via `GET /admin/stats`.
 
 ### `internal/admin`
 Management API protected by a separate `ADMIN_API_KEY`. Provides read/write access to live route config, cache stats, and telemetry. Route mutations are audit-logged via `slog` and take effect immediately without restart.

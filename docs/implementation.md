@@ -10,8 +10,22 @@ All configuration is supplied through environment variables. Every variable has 
 |---|---|---|
 | `OPENAI_API_KEY` | _(empty)_ | OpenAI API key. If empty, the OpenAI provider is not registered. |
 | `ANTHROPIC_API_KEY` | _(empty)_ | Anthropic API key. If empty, the Anthropic provider is not registered. |
+| `HOSTED_LLMS` | _(empty)_ | JSON array of private OpenAI-compatible endpoints (see below). |
 
-At least one provider key is required to serve real traffic. With neither set, the server starts and accepts requests but returns 400 for any model it cannot route.
+At least one provider key or hosted LLM is required to serve real traffic. With none set, the server starts and accepts requests but returns 400 for any model it cannot route.
+
+#### `HOSTED_LLMS` format
+
+A JSON array where each entry describes a private inference endpoint:
+
+```json
+[
+  {"name": "my-private-llm", "url": "https://api.example.com/v1", "key": "sk-..."},
+  {"name": "my-fast-llm",    "url": "https://fast.example.com/v1", "key": "sk-..."}
+]
+```
+
+Each entry's `name` is used as the model identifier in `routes.json` (e.g. `"economy": "my-private-llm"`). All hosted endpoints must expose an OpenAI-compatible `/chat/completions` endpoint.
 
 ### Gateway Authentication
 
@@ -69,8 +83,19 @@ The route file is loaded at startup and can be updated at runtime via `PATCH /ad
     "model_override": "",
     "models": {
       "simple": "gpt-4o-mini",
-      "complex": "claude-opus-5"
-    }
+      "complex": "claude-opus-5",
+      "writing": "claude-sonnet-5",
+      "qa": "gpt-4o",
+      "economy": "my-private-llm"
+    },
+    "model_costs": {
+      "claude-opus-5": 0.015,
+      "claude-sonnet-5": 0.003,
+      "gpt-4o": 0.005,
+      "gpt-4o-mini": 0.00015,
+      "my-private-llm": 0.0001
+    },
+    "budget_threshold": 0
   },
   "named": {}
 }
@@ -87,9 +112,14 @@ The route file is loaded at startup and can be updated at runtime via `PATCH /ad
 | `response_format_type` | string | `""` | Forces `response_format` when the caller hasn't set one. Values: `""`, `"text"`, `"json_object"`. |
 | `concise_response` | bool | false | Injects a system message instructing the model to be brief. |
 | `agent_traffic` | bool | false | Enables shorthand compression/decompression for this route. |
-| `model_override` | string | `""` | Forces a specific model, bypassing complexity scoring. |
+| `model_override` | string | `""` | Forces a specific model, bypassing all routing logic. |
 | `models.simple` | string | `"gpt-4o-mini"` | Model used for low-complexity requests. |
 | `models.complex` | string | `"claude-opus-5"` | Model used for high-complexity requests. |
+| `models.writing` | string | `""` | Model used for planning and writing tasks (detected by keyword). |
+| `models.qa` | string | `""` | Model used for QA, testing, and debugging tasks (detected by keyword). |
+| `models.economy` | string | `""` | Model used when the route's `budget_threshold` has been reached. Typically a hosted private LLM. |
+| `model_costs` | map | `{}` | Cost per 1 000 tokens per model name (dollars). Used to track spend against `budget_threshold`. |
+| `budget_threshold` | float | 0 | Accumulated spend in dollars at which requests switch to the `economy` model. 0 disables budget routing. Resets on process restart. |
 
 ---
 
@@ -120,6 +150,8 @@ Three middleware functions composable with `middleware.Chain(...)`.
 `provider.NewOpenAI(key)` — passes requests through unchanged to `https://api.openai.com/v1/chat/completions`.
 
 `provider.NewAnthropic(key)` — translates to the Anthropic Messages API. System messages are extracted. Stop reasons are normalised: `end_turn` / `stop_sequence` → `"stop"`, `max_tokens` → `"length"`, `tool_use` → `"tool_calls"`. `max_tokens` defaults to 4096 when the caller sends 0.
+
+`provider.NewHosted(name, url, key)` — calls any OpenAI-compatible endpoint at `url`. The `name` must match the model name used in `routes.json` (e.g. `"economy": "my-private-llm"` requires `name = "my-private-llm"`). Registered automatically from the `HOSTED_LLMS` env var.
 
 ### `internal/trim`
 `trim.New(provider)` creates a Manager. Pass `nil` as the provider to disable summarisation (trimming still works but dropped messages are discarded without summarisation).

@@ -59,6 +59,7 @@ go run ./cmd/gateway
 ```sh
 export OPENAI_API_KEY=sk-...
 export ANTHROPIC_API_KEY=sk-ant-...
+export HOSTED_LLMS='[{"name":"my-private-llm","url":"https://api.example.com/v1","key":"sk-..."}]'
 export GATEWAY_API_KEYS="sk-gw-alice:alice"
 export ADMIN_API_KEY=sk-admin-secret
 export GATEWAY_ADDR=:9000
@@ -291,6 +292,35 @@ go test ./... -bench=. -benchmem -benchtime=3s
 ## Route Configuration
 
 Edit `config/routes.json` and restart the server, or use `PATCH /admin/routes/default` to update live without restarting.
+
+Example — full model tier configuration with a hosted private LLM and budget threshold:
+
+```json
+{
+  "default": {
+    "token_budget": 4000,
+    "complexity_threshold": 0.6,
+    "similarity_threshold": 0.85,
+    "models": {
+      "simple": "gpt-4o-mini",
+      "complex": "claude-opus-5",
+      "writing": "claude-sonnet-5",
+      "qa": "gpt-4o",
+      "economy": "my-private-llm"
+    },
+    "model_costs": {
+      "claude-opus-5": 0.015,
+      "claude-sonnet-5": 0.003,
+      "gpt-4o": 0.005,
+      "gpt-4o-mini": 0.00015,
+      "my-private-llm": 0.0001
+    },
+    "budget_threshold": 50.0
+  }
+}
+```
+
+When `budget_threshold` is set, requests accumulate spend (tokens × cost-per-1k) until the threshold is reached, at which point all subsequent requests route to the `economy` model. Spend resets on process restart.
 
 Example — enable agent traffic compression and JSON-only output:
 

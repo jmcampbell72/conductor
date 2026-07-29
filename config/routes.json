@@ -5,7 +5,18 @@
     "similarity_threshold": 0.85,
     "models": {
       "simple": "gpt-4o-mini",
-      "complex": "claude-opus-5"
-    }
+      "complex": "claude-opus-5",
+      "writing": "claude-sonnet-5",
+      "qa": "gpt-4o",
+      "economy": "my-private-llm"
+    },
+    "model_costs": {
+      "claude-opus-5": 0.015,
+      "claude-sonnet-5": 0.003,
+      "gpt-4o": 0.005,
+      "gpt-4o-mini": 0.00015,
+      "my-private-llm": 0.0001
+    },
+    "budget_threshold": 0
   }
 }
