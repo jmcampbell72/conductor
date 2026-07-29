@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"conductor/internal/api"
@@ -13,27 +14,37 @@ import (
 
 const openAIBase = "https://api.openai.com/v1"
 
-type OpenAI struct {
-	key    string
-	client *http.Client
+// OpenAICompatible calls any OpenAI-compatible chat completions endpoint.
+type OpenAICompatible struct {
+	name    string
+	baseURL string
+	key     string
+	client  *http.Client
 }
 
-func NewOpenAI(key string) *OpenAI {
-	return &OpenAI{
-		key:    key,
-		client: &http.Client{Timeout: 120 * time.Second},
+func NewOpenAI(key string) *OpenAICompatible {
+	return NewHosted("openai", openAIBase, key)
+}
+
+// NewHosted creates a provider for a private OpenAI-compatible endpoint.
+func NewHosted(name, baseURL, key string) *OpenAICompatible {
+	return &OpenAICompatible{
+		name:    name,
+		baseURL: strings.TrimRight(baseURL, "/"),
+		key:     key,
+		client:  &http.Client{Timeout: 120 * time.Second},
 	}
 }
 
-func (p *OpenAI) Name() string { return "openai" }
+func (p *OpenAICompatible) Name() string { return p.name }
 
-func (p *OpenAI) Complete(ctx context.Context, req *api.ChatCompletionRequest) (*api.ChatCompletionResponse, error) {
+func (p *OpenAICompatible) Complete(ctx context.Context, req *api.ChatCompletionRequest) (*api.ChatCompletionResponse, error) {
 	body, err := json.Marshal(req)
 	if err != nil {
 		return nil, err
 	}
 
-	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, openAIBase+"/chat/completions", bytes.NewReader(body))
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPost, p.baseURL+"/chat/completions", bytes.NewReader(body))
 	if err != nil {
 		return nil, err
 	}
@@ -49,9 +60,9 @@ func (p *OpenAI) Complete(ctx context.Context, req *api.ChatCompletionRequest) (
 	if resp.StatusCode != http.StatusOK {
 		var errResp api.ErrorResponse
 		if jsonErr := json.NewDecoder(resp.Body).Decode(&errResp); jsonErr != nil {
-			return nil, fmt.Errorf("openai: HTTP %d", resp.StatusCode)
+			return nil, fmt.Errorf("%s: HTTP %d", p.name, resp.StatusCode)
 		}
-		return nil, fmt.Errorf("openai: %s", errResp.Error.Message)
+		return nil, fmt.Errorf("%s: %s", p.name, errResp.Error.Message)
 	}
 
 	var result api.ChatCompletionResponse

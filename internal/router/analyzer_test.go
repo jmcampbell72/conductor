@@ -13,21 +13,21 @@ func req(content string) *api.ChatCompletionRequest {
 }
 
 func TestScore_SimpleGreeting(t *testing.T) {
-	score := NewAnalyzer().Score(req("hi there"))
+	score := NewAnalyzer().Analyze(req("hi there")).Score
 	if score >= 0.3 {
 		t.Fatalf("greeting should score low; got %.2f", score)
 	}
 }
 
 func TestScore_TechnicalKeywords(t *testing.T) {
-	score := NewAnalyzer().Score(req("analyze and implement an optimized algorithm for this problem"))
+	score := NewAnalyzer().Analyze(req("analyze and implement an optimized algorithm for this problem")).Score
 	if score < 0.3 {
 		t.Fatalf("technical request should score higher; got %.2f", score)
 	}
 }
 
 func TestScore_CodeBlock(t *testing.T) {
-	score := NewAnalyzer().Score(req("review this:\n```go\nfunc main() {}\n```"))
+	score := NewAnalyzer().Analyze(req("review this:\n```go\nfunc main() {}\n```")).Score
 	if score < 0.15 {
 		t.Fatalf("code block should contribute to score; got %.2f", score)
 	}
@@ -47,7 +47,7 @@ func TestScore_LongMultiTurn(t *testing.T) {
 		}
 		messages[i] = api.Message{Role: role, Content: content}
 	}
-	score := NewAnalyzer().Score(&api.ChatCompletionRequest{Messages: messages})
+	score := NewAnalyzer().Analyze(&api.ChatCompletionRequest{Messages: messages}).Score
 	if score < 0.6 {
 		t.Fatalf("long multi-turn technical conversation should score >= 0.6; got %.2f", score)
 	}
@@ -61,7 +61,7 @@ func TestScore_Bounded(t *testing.T) {
 	for i := range messages {
 		messages[i] = api.Message{Role: "user", Content: content}
 	}
-	score := NewAnalyzer().Score(&api.ChatCompletionRequest{Messages: messages})
+	score := NewAnalyzer().Analyze(&api.ChatCompletionRequest{Messages: messages}).Score
 	if score > 1.0 {
 		t.Fatalf("score must not exceed 1.0; got %.2f", score)
 	}

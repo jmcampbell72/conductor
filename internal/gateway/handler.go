@@ -71,13 +71,25 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Telemetry is recorded via defer so it fires on every return path.
-	var teleModel, teleCacheStatus string
+	var teleModel, teleCacheStatus, teleCallerID, teleTier string
 	var teleTokens int
+	var teleRoute config.RouteConfig
 	defer func() {
 		if h.tele != nil {
-			h.tele.Record(middleware.CallerID(r.Context()), teleModel, teleCacheStatus, teleTokens)
+			h.tele.Record(teleCallerID, teleModel, teleCacheStatus, teleTokens)
+			if teleTier != "" {
+				h.tele.RecordTaskRoute(teleCallerID, teleTier)
+			}
+			if teleTokens > 0 && teleRoute.ModelCosts != nil {
+				if cost, ok := teleRoute.ModelCosts[teleModel]; ok {
+					dollars := float64(teleTokens) / 1000 * cost
+					h.tele.RecordSpend("default", dollars)
+				}
+			}
 		}
 	}()
+
+	teleCallerID = middleware.CallerID(r.Context())
 
 	var req api.ChatCompletionRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -100,6 +112,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	route := h.routeStore.Default()
+	teleRoute = route
 
 	// Decompress agent-traffic history before trimming so the trimmer and scorer
 	// see natural language rather than shorthand tokens.
@@ -113,9 +126,14 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		processed = &req
 	}
 
-	// Score complexity and select the model tier.
-	score := h.analyzer.Score(processed)
-	processed.Model = h.selector.Select(score, req.Model)
+	// Analyse complexity and task type, then select the model tier.
+	analysis := h.analyzer.Analyze(processed)
+	budgetExceeded := route.BudgetThreshold > 0 &&
+		h.tele != nil &&
+		h.tele.RouteSpend("default") >= route.BudgetThreshold
+
+	processed.Model = h.selector.Select(analysis, req.Model, budgetExceeded)
+	teleTier = taskTier(analysis, budgetExceeded, h.selector)
 
 	// Apply per-route output controls (max_tokens cap, response_format, concise instruction).
 	// Must run after model selection and before the cache key so the key reflects any injections.
@@ -123,6 +141,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	teleModel = processed.Model
 	middleware.SetLogField(r.Context(), "model", processed.Model)
+	middleware.SetLogField(r.Context(), "task_type", string(analysis.TaskType))
 
 	// Exact KV cache check.
 	key := cache.Key(processed)
@@ -190,7 +209,13 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 }
 
+// selectProvider maps a model name to a registered provider.
+// Exact name match is checked first so that hosted LLMs and any explicitly
+// named provider are resolved before falling back to prefix-based routing.
 func (h *Handler) selectProvider(model string) provider.Provider {
+	if p, ok := h.providers[model]; ok {
+		return p
+	}
 	switch {
 	case strings.HasPrefix(model, "gpt-"),
 		strings.HasPrefix(model, "o1"),
@@ -205,6 +230,20 @@ func (h *Handler) selectProvider(model string) provider.Provider {
 		}
 		return nil
 	}
+}
+
+// taskTier returns a telemetry label for the routing decision that was made.
+func taskTier(analysis router.Analysis, budgetExceeded bool, s *router.Selector) string {
+	if budgetExceeded {
+		return "economy"
+	}
+	switch analysis.TaskType {
+	case router.TaskPlanning, router.TaskWriting:
+		return "writing"
+	case router.TaskQA:
+		return "qa"
+	}
+	return ""
 }
 
 func validate(req *api.ChatCompletionRequest) error {

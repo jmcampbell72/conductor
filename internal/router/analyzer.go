@@ -6,6 +6,22 @@ import (
 	"conductor/internal/api"
 )
 
+// TaskType classifies the nature of the work being requested.
+type TaskType string
+
+const (
+	TaskGeneral  TaskType = "general"
+	TaskPlanning TaskType = "planning"
+	TaskWriting  TaskType = "writing"
+	TaskQA       TaskType = "qa"
+)
+
+// Analysis is the combined output of the analyzer.
+type Analysis struct {
+	Score    float64
+	TaskType TaskType
+}
+
 // complexKeywords are signals that a request requires substantive reasoning,
 // multi-step generation, or deep domain knowledge.
 var complexKeywords = []string{
@@ -18,29 +34,78 @@ var complexKeywords = []string{
 	"pros and cons", "trade-offs", "tradeoffs",
 }
 
-// Analyzer scores requests on a 0.0–1.0 scale using four heuristic signals.
+var planningKeywords = []string{
+	"plan", "outline", "roadmap", "strategy", "structure", "breakdown",
+	"schedule", "milestone", "sprint", "agenda", "timeline", "prioritize",
+	"prioritise", "architecture", "design", "proposal",
+}
+
+var writingKeywords = []string{
+	"write", "draft", "compose", "essay", "blog", "article", "email",
+	"letter", "story", "summarize", "summarise", "rewrite", "edit",
+	"paragraph", "caption", "copywrite", "narrative", "report",
+}
+
+var qaKeywords = []string{
+	"test", "verify", "check", "validate", "review", "debug", "fix",
+	"bug", "error", "issue", "problem", "assert", "coverage", "qa",
+	"quality", "regression", "unittest", "unit test",
+}
+
+// Analyzer scores requests on a 0.0–1.0 scale using four heuristic signals
+// and classifies the task type from keyword sets.
 type Analyzer struct{}
 
 func NewAnalyzer() *Analyzer { return &Analyzer{} }
 
-// Score returns a complexity score in [0.0, 1.0].
+// Analyze returns a complexity score in [0.0, 1.0] and a task type classification.
 // Four signals, with maximum contributions that sum to 1.0:
 //
 //	Length      0.25  saturates at 5000 characters
 //	Turn count  0.15  saturates at 10 messages
 //	Keywords    0.35  saturates at 4 matched keywords
 //	Structure   0.25  code fences (0.15) + equations/JSON (up to 0.10)
-func (a *Analyzer) Score(req *api.ChatCompletionRequest) float64 {
+func (a *Analyzer) Analyze(req *api.ChatCompletionRequest) Analysis {
 	combined := combinedContent(req.Messages)
+	lower := strings.ToLower(combined)
+
 	score := lengthScore(combined) +
 		turnScore(req.Messages) +
-		keywordScore(strings.ToLower(combined)) +
+		keywordScore(lower) +
 		structureScore(combined)
 
 	if score > 1.0 {
-		return 1.0
+		score = 1.0
 	}
-	return score
+
+	return Analysis{
+		Score:    score,
+		TaskType: classifyTask(lower),
+	}
+}
+
+// classifyTask returns the most specific matching task type.
+// Priority: qa > writing > planning > general.
+func classifyTask(lower string) TaskType {
+	if matchesAny(lower, qaKeywords) {
+		return TaskQA
+	}
+	if matchesAny(lower, writingKeywords) {
+		return TaskWriting
+	}
+	if matchesAny(lower, planningKeywords) {
+		return TaskPlanning
+	}
+	return TaskGeneral
+}
+
+func matchesAny(lower string, keywords []string) bool {
+	for _, kw := range keywords {
+		if strings.Contains(lower, kw) {
+			return true
+		}
+	}
+	return false
 }
 
 func lengthScore(combined string) float64 {

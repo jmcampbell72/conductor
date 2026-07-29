@@ -37,8 +37,12 @@ func main() {
 		providers["anthropic"] = provider.NewAnthropic(cfg.AnthropicKey)
 		slog.Info("provider registered", "name", "anthropic")
 	}
+	for _, h := range cfg.HostedLLMs {
+		providers[h.Name] = provider.NewHosted(h.Name, h.URL, h.Key)
+		slog.Info("provider registered", "name", h.Name, "url", h.URL)
+	}
 	if len(providers) == 0 {
-		slog.Warn("no providers configured — set OPENAI_API_KEY or ANTHROPIC_API_KEY")
+		slog.Warn("no providers configured — set OPENAI_API_KEY, ANTHROPIC_API_KEY, or HOSTED_LLMS")
 	}
 
 	var summariseWith provider.Provider
